@@ -35,13 +35,12 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
  */
 public class UploadFile extends HttpServlet {
 
-     private final String UPLOAD_DIRECTORY = "/home/pravat/";
-   //private final String UPLOAD_DIRECTORY = "/var/lib/openshift/55b30a0d5973ca405e0000b6/app-root/data/image";
+    private final String UPLOAD_DIRECTORY = "/home/pravat/";
+    //private final String UPLOAD_DIRECTORY = "/var/lib/openshift/55b30a0d5973ca405e0000b6/app-root/data/image";
     // database connection settings
-    private final String dbURL = "jdbc:mysql://localhost:3306/AppDB";
+    private final String dbURL = "jdbc:mysql://localhost:3306/appDB";
     private final String dbUser = "root";
     private final String dbPass = "mysqladmin";
-
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -62,12 +61,11 @@ public class UploadFile extends HttpServlet {
 
                         String name = item.getName();
                         // file name generated using current timestamp
-                        String ext=name.substring(name.lastIndexOf("."));
-                        name=System.currentTimeMillis()+ext;
+                        String ext = name.substring(name.lastIndexOf("."));
+                        name = System.currentTimeMillis() + ext;
                         System.out.println(item.getFieldName());
                         item.write(new File(UPLOAD_DIRECTORY + File.separator + name));
 
-                        
                         String fieldName = item.getFieldName();
                         String fileName = item.getName();
                         String contentType = item.getContentType();
@@ -75,46 +73,53 @@ public class UploadFile extends HttpServlet {
                         long sizeInBytes = item.getSize();
                         String filesize = Long.toString(sizeInBytes / 1024);
                         //save using jdbc
-                        Class.forName("com.mysql.jdbc.Driver");
-                        Connection conn = DriverManager.getConnection(dbURL, dbUser, dbPass);
+                        try {
 
-                        Timestamp ts = new Timestamp(new Date().getTime());
-                        String sql = "INSERT INTO `Dmsfile` (`id`, `File_Name`, `File_Type`, `size`, `Folder_Id`, `dode`) VALUES (NULL, ?, ?, ?, ?,?)";
-                        PreparedStatement pst;
-                        pst = conn.prepareStatement(sql,PreparedStatement.RETURN_GENERATED_KEYS);
-                        pst.setString(1, fileName);
-                        pst.setString(2, contentType);
-                        pst.setString(3, filesize);
-                        pst.setString(4, "1");
-                        pst.setString(5, ts.toString());
-                        //int id =10;
-                        pst.executeUpdate();
-                        ResultSet keys = pst.getGeneratedKeys();
-                        keys.next();
-                        int id = keys.getInt(1);
+                            Class.forName("com.mysql.jdbc.Driver");
+                            Connection conn = DriverManager.getConnection(dbURL, dbUser, dbPass);
 
-                        pst.close();
-                        //conn.close();
-                        sql = "select *  from `Dmsfile`  where id=" + id;
-                        Statement st = conn.createStatement();
-                        ResultSet rs = st.executeQuery(sql);
-                        InputStream is;
-                        File f1;
-                        byte[] byteArray = null;
-                        while (rs.next()) {
-                            String fname = rs.getString(2);
-                            String fpath = UPLOAD_DIRECTORY + File.separator + fname;
-                            Path path = Paths.get(fpath);
-                            byteArray = Files.readAllBytes(path);
+                            Timestamp ts = new Timestamp(new Date().getTime());
+                            String sql = "INSERT INTO `Dmsfile` (`id`, `File_Name`, `File_Type`, `size`, `Folder_Id`, `dode`) VALUES (NULL, ?, ?, ?, ?,?)";
+                            PreparedStatement pst;
+                            pst = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+                            pst.setString(1, name);
+                            pst.setString(2, contentType);
+                            pst.setString(3, filesize);
+                            pst.setString(4, "1");
+                            pst.setString(5, ts.toString());
+                            //int id =10;
+                            pst.executeUpdate();
+                            ResultSet keys = pst.getGeneratedKeys();
+                            keys.next();
+                            int id = keys.getInt(1);
 
+                            pst.close();
+                            //conn.close();
+                            sql = "select *  from `Dmsfile`  where id=" + id;
+                            Statement st = conn.createStatement();
+                            ResultSet rs = st.executeQuery(sql);
+                            InputStream is;
+                            File f1;
+                            byte[] byteArray = null;
+                            while (rs.next()) {
+                                String fname = rs.getString(2);
+                                String fpath = UPLOAD_DIRECTORY + File.separator + fname;
+                                Path path = Paths.get(fpath);
+                                byteArray = Files.readAllBytes(path);
+
+                            }
+
+                            response.setContentType("image/jpeg");
+                            response.setHeader("Content-disposition", "inline; filename=javatpoint.jpg");
+                            ServletOutputStream servletOut = response.getOutputStream();
+                            BufferedOutputStream bout = new BufferedOutputStream(servletOut);
+                            bout.write(byteArray);
+                            bout.flush();
+
+                        } catch (Exception e) {
+                            System.out.println(e);
                         }
 
-                        response.setContentType("image/jpeg");
-                        response.setHeader("Content-disposition", "inline; filename='javatpoint.jpg'");
-                        ServletOutputStream servletOut = response.getOutputStream();
-                        BufferedOutputStream bout = new BufferedOutputStream(servletOut);
-                        bout.write(byteArray);
-                        bout.flush();
                         //servletOut.write(is.);
                         //pst.execute("");
                         //response using jdbc
