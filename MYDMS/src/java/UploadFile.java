@@ -35,13 +35,21 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
  */
 public class UploadFile extends HttpServlet {
 
-    private final String UPLOAD_DIRECTORY = "/home/pravat/";
-    //private final String UPLOAD_DIRECTORY = "/var/lib/openshift/55b30a0d5973ca405e0000b6/app-root/data/image";
+    
+
     // database connection settings
     private final String dbURL = "jdbc:mysql://localhost:3306/appDB";
     private final String dbUser = "root";
     private final String dbPass = "mysqladmin";
+    private final String UPLOAD_DIRECTORY = "/home/pravat/";
 
+    /*String dbhost = System.getenv("OPENSHIFT_MYSQL_DB_HOST");
+     String dbport = System.getenv("OPENSHIFT_MYSQL_DB_PORT");
+     String dbUser = System.getenv("OPENSHIFT_MYSQL_DB_USERNAME");
+     String dbPass = System.getenv("OPENSHIFT_MYSQL_DB_PASSWORD");
+     String dbURL = "jdbc:mysql://" + dbhost + ":" + dbport;
+     private final String UPLOAD_DIRECTORY = "/var/lib/openshift/55b30a0d5973ca405e0000b6/app-root/data/image";
+     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
